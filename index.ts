@@ -12,7 +12,7 @@ interface Data<T> {
    * A unique identifier for this window's instance.
    */
   id: string;
-  
+
   /**
    * The reactive shared data.
    */
@@ -167,6 +167,12 @@ export const useShared = <T>(config?: Config<T>) => {
     if (config?.on?.updateSent) config.on.updateSent();
   };
 
+  const reset = () => {
+    if (!config || config.initialData == undefined) return;
+
+    dataRef.value = config.initialData;
+  };
+
   unlistenFns.push(
     watch(
       dataRef,
@@ -210,6 +216,11 @@ export const useShared = <T>(config?: Config<T>) => {
      * Call this when the component or app using this is destroyed.
      */
     destroy,
+
+    /**
+     * Resets the data to config.initalData.
+     */
+    reset,
 
     /**
      * The timestamp of the last update (either sent or received).
