@@ -1,12 +1,12 @@
 {
   "name": "@waradu/useshared",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "main": "src/index.ts",
   "module": "src/index.ts",
   "type": "module",
   "repository": "waradu/useShared",
   "license": "MIT",
-  "description": "Shared values between windows in tauri with nuxt",
+  "description": "Shared values between windows in tauri and nuxt with tauri events.",
   "publishConfig": {
     "access": "public"
   },
