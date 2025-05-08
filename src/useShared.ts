@@ -26,7 +26,7 @@ interface Data<T> {
 
 interface Storage<T> {
   set: (key: string, data: T) => void;
-  get: (key: string) => T;
+  get: (key: string) => T | undefined;
   delete?: (key: string) => void;
 }
 
@@ -104,7 +104,9 @@ interface Config<T> {
  * });
  * ```
  */
-export const useShared = <T>(config?: Config<T>) => {
+export const useShared = <T>(
+  config?: Config<T>
+) => {
   type IntData = Data<T>;
 
   const id = Math.random().toString(36).slice(2, 7);
@@ -118,8 +120,10 @@ export const useShared = <T>(config?: Config<T>) => {
   if (config?.data) {
     dataRef.value = config.data;
     initialData.value = config.data;
-    if (config?.store && dataRef.value) dataRef.value = config.store.get(key);
   }
+
+  const storedata = config?.store?.get(key);
+  if (config?.store && storedata != undefined) dataRef.value = storedata;
 
   const log = (text: string) => {
     if (config?.debug) console.log(`SHARED (${id}) ${text}`);
