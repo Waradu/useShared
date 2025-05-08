@@ -25,8 +25,8 @@ interface Data<T> {
 }
 
 export interface Storage<T> {
-  set: (key: string, data: T) => void;
-  get: (key: string) => T | undefined;
+  set: (key: string, data: T) => Promise<void> | void;
+  get: (key: string) => Promise<T | undefined> | T | undefined;
   delete?: (key: string) => void;
 }
 
@@ -120,8 +120,12 @@ export const useShared = <T>(config?: Config<T>) => {
     initialData.value = config.data;
   }
 
-  const storedata = config?.store?.get(key);
-  if (config?.store && storedata != undefined) dataRef.value = storedata;
+  const load = async () => {
+    const storedata = await config?.store?.get(key);
+    if (config?.store && storedata != undefined) dataRef.value = storedata;
+  };
+
+  load();
 
   const log = (text: string) => {
     if (config?.debug) console.log(`SHARED (${id}) ${text}`);
