@@ -104,9 +104,7 @@ interface Config<T> {
  * });
  * ```
  */
-export const useShared = <T>(
-  config?: Config<T>
-) => {
+export const useShared = <T>(config?: Config<T>) => {
   type IntData = Data<T>;
 
   const id = Math.random().toString(36).slice(2, 7);
