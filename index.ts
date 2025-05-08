@@ -17,12 +17,22 @@ interface Data<T> {
    * The reactive shared data.
    */
   data?: T;
+
+  /**
+   * Initial value for the shared data.
+   */
+  initialData?: T;
+}
+
+interface Storage<T> {
+  set: (key: string, data: T) => void;
+  get: (key: string) => T;
+  delete?: (key: string) => void;
 }
 
 interface Config<T> {
   /**
    * Initial value for the shared data.
-   * It's recommended to set this to avoid `undefined` errors.
    */
   initialData?: T;
 
@@ -62,6 +72,11 @@ interface Config<T> {
      */
     syncReceived?: (event: Event<Data<T>>) => void;
   };
+
+  /**
+   * Custom store
+   */
+  store?: Storage<T>;
 }
 
 /**
@@ -98,8 +113,13 @@ export const useShared = <T>(config?: Config<T>) => {
   const updating = ref(false);
   const isSynced = ref(false);
   const lastUpdated = ref<Date>(new Date());
+  const initialData = ref<T>();
 
-  if (config?.initialData) dataRef.value = config.initialData;
+  if (config?.initialData) {
+    dataRef.value = config.initialData;
+    initialData.value = config.initialData;
+    if (config?.store && dataRef.value) dataRef.value = config.store.get(key);
+  }
 
   const log = (text: string) => {
     if (config?.debug) console.log(`SHARED (${id}) ${text}`);
@@ -111,7 +131,7 @@ export const useShared = <T>(config?: Config<T>) => {
   };
 
   listen<IntData>(`shared:update:${key}`, (event) => {
-    if (!event.payload || event.payload.id == id) return;
+    if (event.payload == undefined || event.payload.id == id) return;
 
     updating.value = true;
     dataRef.value = event.payload.data;
@@ -123,23 +143,35 @@ export const useShared = <T>(config?: Config<T>) => {
   }).then((unlistenFn) => unlistenFns.push(unlistenFn));
 
   listen<IntData>(`shared:get:${key}`, (event) => {
-    if (!event.payload || event.payload.id == id || !dataRef.value) return;
+    if (
+      event.payload == undefined ||
+      event.payload.id == id ||
+      dataRef.value == undefined
+    )
+      return;
 
     log(`Sync request recieved from '${event.payload.id}'`);
 
     emit<IntData>(`shared:set:${key}:${event.payload.id}`, {
       id: id,
       data: dataRef.value,
+      initialData: initialData.value,
     });
 
     if (config?.on?.syncSent) config.on.syncSent();
   }).then((unlistenFn) => unlistenFns.push(unlistenFn));
 
   once<IntData>(`shared:set:${key}:${id}`, (event) => {
-    if (!event.payload || event.payload.id == id) return;
+    if (event.payload == undefined || event.payload.id == id) return;
     if (dataRef.value == event.payload.data) return;
 
     dataRef.value = event.payload.data;
+    initialData.value = event.payload.initialData;
+    try {
+      if (config?.store && dataRef.value) config.store.set(key, dataRef.value);
+    } catch (e) {
+      log(`${e}`);
+    }
     lastUpdated.value = new Date();
     isSynced.value = true;
 
@@ -153,7 +185,7 @@ export const useShared = <T>(config?: Config<T>) => {
   log(`Requested sync`);
 
   const sync = () => {
-    if (!dataRef.value) return;
+    if (dataRef.value == undefined) return;
 
     log(`Broadcasting update`);
 
@@ -162,15 +194,21 @@ export const useShared = <T>(config?: Config<T>) => {
       data: dataRef.value,
     });
 
+    try {
+      if (config?.store && dataRef.value) config.store.set(key, dataRef.value);
+    } catch (e) {
+      log(`${e}`);
+    }
+
     lastUpdated.value = new Date();
 
     if (config?.on?.updateSent) config.on.updateSent();
   };
 
   const reset = () => {
-    if (!config || config.initialData == undefined) return;
+    if (!config || initialData.value == undefined) return;
 
-    dataRef.value = config.initialData;
+    dataRef.value = initialData.value;
   };
 
   unlistenFns.push(
@@ -226,5 +264,10 @@ export const useShared = <T>(config?: Config<T>) => {
      * The timestamp of the last update (either sent or received).
      */
     lastUpdated,
+
+    /**
+     * Initial value for the shared data.
+     */
+    initialData,
   };
 };
