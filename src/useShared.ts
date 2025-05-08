@@ -251,7 +251,7 @@ export const useShared = <T>(config?: Config<T>) => {
     key,
 
     /**
-     * Becomes true after an initial sync is completed with another window.
+     * Becomes true after an initial sync is completed with another window (will be false if this is the first share instance).
      */
     isSynced,
 
