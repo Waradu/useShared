@@ -1,2 +1,2 @@
-export { useShared as default } from "./useShared";
+export { useShared as default, type Storage } from "./useShared";
 export { LocalStorage } from "./localStorage";

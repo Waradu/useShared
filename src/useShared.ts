@@ -24,7 +24,7 @@ interface Data<T> {
   initialData?: T;
 }
 
-interface Storage<T> {
+export interface Storage<T> {
   set: (key: string, data: T) => void;
   get: (key: string) => T | undefined;
   delete?: (key: string) => void;

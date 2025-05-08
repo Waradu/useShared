@@ -1,7 +1,9 @@
+import type { Storage } from ".";
+
 /**
  * Save data to localStorage
  */
-export class LocalStorage<T> {
+export class LocalStorage<T> implements Storage<T> {
   set(key: string, data: T) {
     const json = JSON.stringify(data);
     localStorage.setItem(key, json);

@@ -68,9 +68,9 @@ const { data: isDarkmode } = useShared({
 ### Other stuff
 
 ```ts
-const shared = useShared()
+const shared = useShared();
 
-shared.destroy() // destroy the connection. it will still be rective but only on the current window.
+shared.destroy(); // destroy the connection. it will still be rective but only on the current window.
 
-shared.reset() // reset to the initial added data. Call this on unmount if needed.
+shared.reset(); // reset to the initial added data. Call this on unmount if needed.
 ```
