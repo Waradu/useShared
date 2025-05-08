@@ -34,7 +34,7 @@ interface Config<T> {
   /**
    * Initial value for the shared data.
    */
-  initialData?: T;
+  data?: T;
 
   /**
    * If true, logs debug messages to the console.
@@ -115,9 +115,9 @@ export const useShared = <T>(config?: Config<T>) => {
   const lastUpdated = ref<Date>(new Date());
   const initialData = ref<T>();
 
-  if (config?.initialData) {
-    dataRef.value = config.initialData;
-    initialData.value = config.initialData;
+  if (config?.data) {
+    dataRef.value = config.data;
+    initialData.value = config.data;
     if (config?.store && dataRef.value) dataRef.value = config.store.get(key);
   }
 

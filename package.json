@@ -1,8 +1,8 @@
 {
   "name": "@waradu/useshared",
-  "version": "0.1.0",
-  "main": "index.ts",
-  "module": "index.ts",
+  "version": "0.2.0",
+  "main": "src/index.ts",
+  "module": "src/index.ts",
   "type": "module",
   "repository": "waradu/useShared",
   "license": "MIT",
