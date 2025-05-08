@@ -94,7 +94,7 @@ interface Config<T> {
  * ```ts
  * const { data, isSynced } = useShared<string>({
  *   key: "sharedText",
- *   initialData: "Hello",
+ *   data: "Hello",
  *   debug: true,
  *   on: {
  *     updateReceived: (event) => {
@@ -256,7 +256,7 @@ export const useShared = <T>(config?: Config<T>) => {
     destroy,
 
     /**
-     * Resets the data to config.initalData.
+     * Resets the data to 'config.data'.
      */
     reset,
 
