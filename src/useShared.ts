@@ -116,8 +116,8 @@ export const useShared = <T>(config?: Config<T>) => {
   const initialData = ref<T>();
 
   if (config?.data) {
-    dataRef.value = config.data;
-    initialData.value = config.data;
+    dataRef.value = { ...config.data };
+    initialData.value = { ...config.data };
   }
 
   const load = async () => {
