@@ -116,8 +116,8 @@ export const useShared = <T>(config?: Config<T>) => {
   const initialData = ref<T>();
 
   if (config?.data) {
-    dataRef.value = { ...config.data };
-    initialData.value = { ...config.data };
+    dataRef.value = structuredClone(config.data);
+    initialData.value = structuredClone(config.data);
   }
 
   const load = async () => {
@@ -214,7 +214,9 @@ export const useShared = <T>(config?: Config<T>) => {
   const reset = () => {
     if (!config || initialData.value == undefined) return;
 
-    dataRef.value = initialData.value;
+    log(`Reset data to initialData`)
+
+    dataRef.value = structuredClone(initialData.value);
   };
 
   unlistenFns.push(
