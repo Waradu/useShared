@@ -5,7 +5,7 @@ import {
   type UnlistenFn,
   type Event,
 } from "@tauri-apps/api/event";
-import { ref, watch } from "vue";
+import { ref, toRaw, watch } from "vue";
 
 interface Data<T> {
   /**
@@ -105,7 +105,7 @@ interface Config<T> {
  * ```
  */
 export const useShared = <T>(config?: Config<T>) => {
-  type IntData = Data<T>;
+  type EventData = Data<T>;
 
   const id = Math.random().toString(36).slice(2, 7);
   const key = config?.key || "root";
@@ -116,8 +116,8 @@ export const useShared = <T>(config?: Config<T>) => {
   const initialData = ref<T>();
 
   if (config?.data) {
-    dataRef.value = structuredClone(config.data);
-    initialData.value = structuredClone(config.data);
+    dataRef.value = structuredClone(toRaw(config.data));
+    initialData.value = structuredClone(toRaw(config.data));
   }
 
   const load = async () => {
@@ -136,7 +136,7 @@ export const useShared = <T>(config?: Config<T>) => {
     unlistenFns.forEach((unlistenFn) => unlistenFn());
   };
 
-  listen<IntData>(`shared:update:${key}`, (event) => {
+  listen<EventData>(`shared:update:${key}`, (event) => {
     if (event.payload == undefined || event.payload.id == id) return;
 
     updating.value = true;
@@ -148,7 +148,7 @@ export const useShared = <T>(config?: Config<T>) => {
     if (config?.on?.updateReceived) config.on.updateReceived(event);
   }).then((unlistenFn) => unlistenFns.push(unlistenFn));
 
-  listen<IntData>(`shared:get:${key}`, (event) => {
+  listen<EventData>(`shared:get:${key}`, (event) => {
     if (
       event.payload == undefined ||
       event.payload.id == id ||
@@ -158,7 +158,7 @@ export const useShared = <T>(config?: Config<T>) => {
 
     log(`Sync request recieved from '${event.payload.id}'`);
 
-    emit<IntData>(`shared:set:${key}:${event.payload.id}`, {
+    emit<EventData>(`shared:set:${key}:${event.payload.id}`, {
       id: id,
       data: dataRef.value,
       initialData: initialData.value,
@@ -167,7 +167,7 @@ export const useShared = <T>(config?: Config<T>) => {
     if (config?.on?.syncSent) config.on.syncSent();
   }).then((unlistenFn) => unlistenFns.push(unlistenFn));
 
-  once<IntData>(`shared:set:${key}:${id}`, (event) => {
+  once<EventData>(`shared:set:${key}:${id}`, (event) => {
     if (event.payload == undefined || event.payload.id == id) return;
     if (dataRef.value == event.payload.data) return;
 
@@ -186,7 +186,7 @@ export const useShared = <T>(config?: Config<T>) => {
     if (config?.on?.syncReceived) config.on.syncReceived(event);
   }).then((unlistenFn) => unlistenFns.push(unlistenFn));
 
-  emit<IntData>(`shared:get:${key}`, { id: id });
+  emit<EventData>(`shared:get:${key}`, { id: id });
 
   log(`Requested sync`);
 
@@ -195,7 +195,7 @@ export const useShared = <T>(config?: Config<T>) => {
 
     log(`Broadcasting update`);
 
-    emit<IntData>(`shared:update:${key}`, {
+    emit<EventData>(`shared:update:${key}`, {
       id: id,
       data: dataRef.value,
     });
@@ -214,9 +214,9 @@ export const useShared = <T>(config?: Config<T>) => {
   const reset = () => {
     if (!config || initialData.value == undefined) return;
 
-    log(`Reset data to initialData`)
+    log(`Reset data to initialData`);
 
-    dataRef.value = structuredClone(initialData.value);
+    dataRef.value = structuredClone(toRaw(initialData.value));
   };
 
   unlistenFns.push(
